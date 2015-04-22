@@ -5,4 +5,4 @@ ADD https://raw.githubusercontent.com/ariya/phantomjs/master/examples/rasterize.
 VOLUME ["/srv"]
 WORKDIR /srv
 
-ENTRYPOINT ["/phantomjs/bin/phantomjs", "/rasterize.js"]
+ENTRYPOINT ["/phantomjs/bin/phantomjs", "--ignore-ssl-errors=yes", "--ssl-protocol=tlsv1", "/rasterize.js"]
