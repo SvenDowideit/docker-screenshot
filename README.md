@@ -1,6 +1,6 @@
 A web screenshot container based on [phantomjs](http://phantomjs.org/)'s [rasterize.js](https://raw.githubusercontent.com/ariya/phantomjs/master/examples/rasterize.js).
 
-Based on my [phantomjs container](https://github.com/ubermuda/docker-phantomjs).
+Based on the work of [ubermuda](https://github.com/ubermuda/docker-screenshot).
 
 ## Usage
 
