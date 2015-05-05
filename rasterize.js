@@ -2,16 +2,27 @@ var page = require('webpage').create(),
     system = require('system'),
     address, output, size;
 
-if (system.args.length < 3 || system.args.length > 5) {
-    console.log('Usage: rasterize.js URL filename [paperwidth*paperheight|paperformat] [zoom]');
-    console.log('  paper (pdf output) examples: "5in*7.5in", "10cm*20cm", "A4", "Letter"');
-    console.log('  image (png/jpg output) examples: "1920px" entire page, window width 1920px');
-    console.log('                                   "800px*600px" window, clipped to 800x600');
-    phantom.exit(1);
-} else {
+page.onConsoleMessage = function(msg) {
+  console.log('eval.console: ' + msg);
+};
+
+page.onLoadFinished = function(){
+	console.log("---onLoadFinished: "+page.url);
+	if (page.url === "https://hub.docker.com/") {
+		rasterizePage();
+	}
+}
+
+var rasterizePage = function() {
+    page = require('webpage').create();
+page.onLoadFinished = function(){
+	console.log("---onLoadFinished: "+page.url);
+};
     address = system.args[1];
+    console.log('rasterizePage '+address);
     output = system.args[2];
     page.viewportSize = { width: 600, height: 600 };
+
     if (system.args.length > 3 && system.args[2].substr(-4) === ".pdf") {
         size = system.args[3].split('*');
         page.paperSize = size.length === 2 ? { width: size[0], height: size[1], margin: '0px' }
@@ -34,15 +45,50 @@ if (system.args.length < 3 || system.args.length > 5) {
     if (system.args.length > 4) {
         page.zoomFactor = system.args[4];
     }
-    page.open(address, function (status) {
+            page.open(address, function (status) {
+                    if (status !== 'success') {
+                    console.log('Unable to load the address!');
+                    phantom.exit(1);
+                } else {
+                    console.log('about to render to image');
+                    window.setTimeout(function () {
+                        console.log('rendering to image');
+                        page.render(output);
+                        console.log('post rendering to '+output);
+                        phantom.exit();
+                    }, 200);
+                }
+        });
+};
+
+console.log('Starting');
+
+if (system.args.length < 3 || system.args.length > 5) {
+    console.log('Usage: rasterize.js URL filename [paperwidth*paperheight|paperformat] [zoom]');
+    console.log('  paper (pdf output) examples: "5in*7.5in", "10cm*20cm", "A4", "Letter"');
+    console.log('  image (png/jpg output) examples: "1920px" entire page, window width 1920px');
+    console.log('                                   "800px*600px" window, clipped to 800x600');
+    phantom.exit(1);
+} else {
+    page.open('https://hub.docker.com/account/login', function (status) {
+        console.log('open '+status);
         if (status !== 'success') {
-            console.log('Unable to load the address!');
+            console.log('Unable to load the login page!');
             phantom.exit(1);
-        } else {
-            window.setTimeout(function () {
-                page.render(output);
-                phantom.exit();
-            }, 200);
         }
+        page.evaluate(function() {
+  	    var frm = document.getElementById("form-login");
+            if (frm === null) {
+		console.log('no login form found')
+		console.log(page.content)
+		phantom.exit(1)
+	    }
+            frm.elements["id_username"].value = 'docsuser';
+            frm.elements["id_password"].value = '<password>';
+            console.log('pre-submit loggedin');
+            frm.submit();
+        });
+
+        console.log('loggedin');
     });
 }

@@ -1,0 +1,6 @@
+FROM ubuntu:trusty
+
+RUN apt-get update
+RUN apt-get install -yq imagemagick
+
+ENTRYPOINT ["/usr/bin/mogrify", "-gravity", "South", "-chop", "0x130"]
