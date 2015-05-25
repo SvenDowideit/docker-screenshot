@@ -16,9 +16,23 @@ page.onLoadFinished = function(){
 var rasterizePage = function() {
     console.log('---- start rasterizePage ');
     page = require('webpage').create();
-page.onLoadFinished = function(){
+    page.onLoadFinished = function(){
 	console.log("---onLoadFinished: "+page.url);
-};
+    };
+    page.onResourceRequested = function(requestData, networkRequest){
+	console.log("--------------------------------- request "+requestData.url);
+	if (
+		(requestData.url.indexOf("bam.nr-data.net") !== -1) ||
+		(requestData.url.indexOf("www.google-analytics.com") !== -1) ||
+		(requestData.url.indexOf("mktoresp.com") !== -1) ||
+		(requestData.url.indexOf("pi.pardot.com") !== -1) ||
+		(requestData.url.indexOf("mixpanel.com") !== -1) ||
+		false
+	) {
+		networkRequest.abort();
+		console.log("       ABORTED  "+requestData.url);
+	}
+    };
     address = system.args[1];
     console.log('rasterizePage '+address);
     output = system.args[2];
