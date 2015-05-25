@@ -9,7 +9,8 @@ build:
 	docker build -t imagemagick -f Dockerfile.ImageMagick .
 
 run:
-	docker run -it --rm --name screen -v $(CURDIR):/srv screenshot  https://hub.docker.com/account/organizations/ hub-orgs.png 984px
+	docker run -it --rm --name screen -v $(CURDIR):/srv --env-file=passwords.env \
+		screenshot  https://hub.docker.com/account/organizations/ hub-orgs.png 984px
 
 cmd:
 	docker run -it --rm --name screen -v /data/src/docker-screenshot:/srv --entrypoint bash screenshot

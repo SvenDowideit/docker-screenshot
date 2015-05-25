@@ -7,13 +7,14 @@ page.onConsoleMessage = function(msg) {
 };
 
 page.onLoadFinished = function(){
-	console.log("---onLoadFinished: "+page.url);
+	console.log("-=-=-=-= onLoadFinished: "+page.url);
 	if (page.url === "https://hub.docker.com/") {
 		rasterizePage();
 	}
 }
 
 var rasterizePage = function() {
+    console.log('---- start rasterizePage ');
     page = require('webpage').create();
 page.onLoadFinished = function(){
 	console.log("---onLoadFinished: "+page.url);
@@ -63,6 +64,7 @@ page.onLoadFinished = function(){
 
 console.log('Starting');
 
+
 if (system.args.length < 3 || system.args.length > 5) {
     console.log('Usage: rasterize.js URL filename [paperwidth*paperheight|paperformat] [zoom]');
     console.log('  paper (pdf output) examples: "5in*7.5in", "10cm*20cm", "A4", "Letter"');
@@ -71,23 +73,25 @@ if (system.args.length < 3 || system.args.length > 5) {
     phantom.exit(1);
 } else {
     page.open('https://hub.docker.com/account/login', function (status) {
+	var auth = { hubuser: system.env["HUBUSER"], hubpass: system.env["HUBPASS"] };
+
         console.log('open '+status);
         if (status !== 'success') {
             console.log('Unable to load the login page!');
             phantom.exit(1);
         }
-        page.evaluate(function() {
+        page.evaluate(function(auth) {
   	    var frm = document.getElementById("form-login");
             if (frm === null) {
 		console.log('no login form found')
 		console.log(page.content)
 		phantom.exit(1)
 	    }
-            frm.elements["id_username"].value = 'docsuser';
-            frm.elements["id_password"].value = '<password>';
+            frm.elements["id_username"].value = auth.hubuser;
+            frm.elements["id_password"].value = auth.hubpass;
             console.log('pre-submit loggedin');
             frm.submit();
-        });
+        }, auth);
 
         console.log('loggedin');
     });
