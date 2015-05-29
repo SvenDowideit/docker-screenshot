@@ -8,7 +8,8 @@ page.onConsoleMessage = function(msg) {
 
 page.onLoadFinished = function(){
 	console.log("-=-=-=-= onLoadFinished: "+page.url);
-	if (page.url === "https://hub.docker.com/") {
+	if (page.iamloggingin === true) {
+		page.iamloggingin = false;
 		rasterizePage();
 	}
 }
@@ -93,14 +94,16 @@ if (system.args.length < 3 || system.args.length > 5) {
 	if (system.env["LOGINURL"] === undefined) {
 		rasterizePage();
 	} else {
-	page.open(system.env["LOGINURL"], function (status) {
-		var auth = { 
-				user: system.env["USER"], 
+		page.iamloggingin = true;
+		page.open(system.env["LOGINURL"], function (status) {
+		var auth = {
+				user: system.env["USER"],
 				pass: system.env["PASS"],
 				url: system.env["LOGINURL"],
 				form: system.env["LOGINFORM"],
-				userinput: system.env["USERINPUT"], 
-				passinput: system.env["PASSINPUT"]
+				// Assume that if the form input names are not set, that we're going in order
+				userinput: system.env["USERINPUT"] || 0,
+				passinput: system.env["PASSINPUT"] || 1
 			};
 
 		console.log('open '+status);
@@ -109,15 +112,15 @@ if (system.args.length < 3 || system.args.length > 5) {
 			phantom.exit(1);
 		}
 			page.evaluate(function(auth) {
-			var frm = document.getElementById(auth.form);
+			var frm = document.querySelector(auth.form);
 			if (frm === null) {
 				console.log('no login form found')
 				console.log(page.content)
 				phantom.exit(1)
 			}
-				frm.elements[auth.userinput].value = auth.user;
-			   	frm.elements[auth.passinput].value = auth.pass;
-				console.log('pre-submit loggedin');
+			frm[auth.userinput].value = auth.user;
+		   	frm[auth.passinput].value = auth.pass;
+			console.log('pre-submit loggedin');
 			frm.submit();
 		}, auth);
 
