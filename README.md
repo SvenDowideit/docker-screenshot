@@ -15,3 +15,35 @@ The container is configured to write screenshots to `/srv`, so bind-mounting `$P
                                     "800px*600px" window, clipped to 800x600
 
     $ docker run -v $PWD:/srv ubermuda/screenshot http://www.google.com/ google.com.png 1920px
+
+## Authentication
+
+This container now supports both Basic (browser) auth and simple HTML forms auth.
+To use it, add `--env-file=password.env` to your `docker run` statement, and set
+the (line based) environment variables for the authentication you need:
+
+```
+# Basic Auth settings
+# BASICUSER=
+# BASICPASS=
+
+# HTML auth settings
+LOGINURL=https://hub.docker.com/account/login
+LOGINFORM=form-login
+USERINPUT=id_username
+PASSINPUT=id_password
+
+USER=docsuser
+PASS=notmyrealpassword
+```
+
+## Test images from `make run`
+
+no authentication:
+
+![/docker.png](/docker.png)
+
+HTML auth to Docker Hub
+
+
+![/hub-orgs.png](/hub-orgs.png)
