@@ -1,5 +1,6 @@
 var page = require('webpage').create(),
 	system = require('system'),
+	takeshotnow = false,
 	address, output, size;
 
 page.onConsoleMessage = function(msg) {
@@ -8,10 +9,14 @@ page.onConsoleMessage = function(msg) {
 
 page.onLoadFinished = function(){
 	console.log("-=-=-=-= onLoadFinished: "+page.url);
-	if (page.iamloggingin === true) {
-		page.iamloggingin = false;
+	if (takeshotnow) {
+		takeshotnow = false;
+		console.log("TAKING SCREENSHOT");
 		rasterizePage();
+	} else {
+		console.log("NO SCREENSHOT");
 	}
+
 }
 
 var rasterizePage = function() {
@@ -94,7 +99,7 @@ if (system.args.length < 3 || system.args.length > 5) {
 	if (system.env["LOGINURL"] === undefined) {
 		rasterizePage();
 	} else {
-		page.iamloggingin = true;
+		//page.iamloggingin = true;
 		page.open(system.env["LOGINURL"], function (status) {
 		var auth = {
 				user: system.env["USER"],
@@ -111,7 +116,8 @@ if (system.args.length < 3 || system.args.length > 5) {
 			console.log('Unable to load the login page!');
 			phantom.exit(1);
 		}
-			page.evaluate(function(auth) {
+		takeshotnow = true;
+		page.evaluate(function(auth) {
 			var frm = document.querySelector(auth.form);
 			if (frm === null) {
 				console.log('no login form found')
@@ -119,7 +125,7 @@ if (system.args.length < 3 || system.args.length > 5) {
 				phantom.exit(1)
 			}
 			frm[auth.userinput].value = auth.user;
-		   	frm[auth.passinput].value = auth.pass;
+	   		frm[auth.passinput].value = auth.pass;
 			console.log('pre-submit loggedin');
 			frm.submit();
 		}, auth);
