@@ -37,5 +37,6 @@ RUN cp /phantomjs/bin/phantomjs /usr/local/bin/phantomjs
 VOLUME ["/srv"]
 WORKDIR /srv
 
-ENTRYPOINT ["/phantomjs/bin/phantomjs", "--debug=true", "--ignore-ssl-errors=yes", "--ssl-protocol=tlsv1", "/rasterize.js"]
 ADD rasterize.js /rasterize.js
+
+ENTRYPOINT ["/phantomjs/bin/phantomjs", "--debug=true", "--ignore-ssl-errors=yes", "--ssl-protocol=tlsv1", "/rasterize.js"]

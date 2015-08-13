@@ -19,13 +19,20 @@ page.onLoadFinished = function(){
 
 }
 
+var send = function(info) {
+    info.page.evaluate(function(info){
+      $(info.csssel).val(info.str.slice(0, info.str.length -1)).focus();
+    }, info);
+    info.page.sendEvent('keypress', info.str.slice(info.str.length-1, info.str.length));
+}
+
 var rasterizePage = function() {
 	console.log('---- start rasterizePage ');
 	page = require('webpage').create();
 	page.settings.userName = system.env["BASICUSER"];
 	page.settings.password = system.env["BASICPASS"];
 	page.onLoadFinished = function(){
-	console.log("---onLoadFinished: "+page.url);
+		console.log("---onLoadFinished: "+page.url);
 	};
 	page.onResourceRequested = function(requestData, networkRequest){
 	console.log("--------------------------------- request "+requestData.url);
@@ -101,36 +108,43 @@ if (system.args.length < 3 || system.args.length > 5) {
 	} else {
 		//page.iamloggingin = true;
 		page.open(system.env["LOGINURL"], function (status) {
-		var auth = {
-				user: system.env["USER"],
-				pass: system.env["PASS"],
-				url: system.env["LOGINURL"],
-				form: system.env["LOGINFORM"],
-				// Assume that if the form input names are not set, that we're going in order
-				userinput: system.env["USERINPUT"] || 0,
-				passinput: system.env["PASSINPUT"] || 1
-			};
+			var auth = {
+					user: system.env["USER"],
+					pass: system.env["PASS"],
+					url: system.env["LOGINURL"],
+					form: system.env["LOGINFORM"],
+					// Assume that if the form input names are not set, that we're going in order
+					userinput: system.env["USERINPUT"],
+					passinput: system.env["PASSINPUT"],
+					submitinput: system.env["SUBMIT"] || "input[type='submit']",
+				};
 
-		console.log('open '+status);
-		if (status !== 'success') {
-			console.log('Unable to load the login page!');
-			phantom.exit(1);
-		}
-		takeshotnow = true;
-		page.evaluate(function(auth) {
-			var frm = document.querySelector(auth.form);
-			if (frm === null) {
-				console.log('no login form found')
-				console.log(page.content)
-				phantom.exit(1)
+			console.log('open '+status);
+			if (status !== 'success') {
+				console.log('Unable to load the login page!');
+				phantom.exit(1);
 			}
-			frm[auth.userinput].value = auth.user;
-	   		frm[auth.passinput].value = auth.pass;
-			console.log('pre-submit loggedin');
-			frm.submit();
-		}, auth);
+			takeshotnow = true;
 
-		console.log('loggedin');
-	});
+
+			page.includeJs("http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js", function() 			{
+				console.log("asfdASDF");
+				send({page:page, csssel:auth.form+" "+auth.userinput, str:auth.user})
+				send({page:page, csssel:auth.form+" "+auth.passinput, str:auth.pass})
+
+				page.evaluate(function(auth) {
+					$(auth.form+" "+auth.submitinput).click();
+					$(auth.form).submit();
+				}, auth);
+	//			phantom.exit();
+			});
+
+			console.log('loggedin');
+			setTimeout(function() {
+					// Looks like some react.js apps play single page app and thus don't give us an onPageLoaded event
+					console.log("TIMEOUT TAKING SCREENSHOT");
+					//rasterizePage();
+				}, 20000);
+		});
 	}
 }

@@ -10,11 +10,11 @@ build:
 
 run:
 	# test un-authenticated screenshot
-	docker run -it --rm --name screen -v $(CURDIR):/srv \
-		screenshot  https://docker.com/ docker.png 984px
+	#docker run -it --rm --name screen -v $(CURDIR):/srv \
+	#	screenshot  https://docker.com/ docker.png 984px
 	# test the HTML auth on the Docker hub
 	docker run -it --rm --name screen -v $(CURDIR):/srv --env-file=passwords.env \
-		screenshot  https://hub.docker.com/account/organizations/ hub-orgs.png 984px
+		screenshot https://hub-beta.docker.com/organizations/ hub-orgs.png 984px
 
 cmd:
 	docker run -it --rm --name screen -v /data/src/docker-screenshot:/srv --entrypoint bash screenshot
